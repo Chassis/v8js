@@ -53,6 +53,10 @@ class v8js::extension(
 	if ! defined( Package['php-pear'] ) {
 		package { 'php-pear':
 			ensure => installed,
+			require => [
+				Apt::Ppa['ppa:ondrej/php'],
+				Package["${php_package}-fpm"],
+			],
 		}
 	}
 
