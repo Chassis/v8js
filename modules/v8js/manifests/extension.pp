@@ -72,7 +72,7 @@ class v8js::extension(
 	if ( installed == $package ) {
 		exec { 'pecl install v8js':
 			command => "/bin/echo '/opt/libv8-${v8_version}
-				' | /usr/bin/pecl install v8js",
+				' | /usr/bin/pecl install v8js-2.1.0",
 			unless  => '/usr/bin/pecl info v8js',
 			require => [
 				Package["libv8-${v8_version}"],
