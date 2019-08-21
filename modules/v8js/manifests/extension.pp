@@ -56,7 +56,9 @@ class v8js::extension(
 			require => [
 				Apt::Ppa['ppa:ondrej/php'],
 				Package["${php_package}-fpm"],
+				Package["${php_package}-dev"],
 			],
+			notify  => Service["${php_package}-fpm"],
 		}
 	}
 
@@ -79,6 +81,7 @@ class v8js::extension(
 				Package["libv8-${v8_version}-dev"],
 				Package['php-pear'],
 				Package["${php_package}-dev"],
+				Package["${php_package}-fpm"],
 				Exec['pecl channel-update pecl.php.net'],
 			],
 		}
@@ -88,6 +91,7 @@ class v8js::extension(
 			require =>  [
 				Package['php-pear'],
 				Package["${php_package}-xml"],
+				Package["${php_package}-dev"],
 			]
 		}
 
@@ -102,8 +106,7 @@ class v8js::extension(
 			"/etc/php/${version}/cli/conf.d/99-v8js.ini"
 		]:
 			ensure  => link,
-			require => [ File["/etc/php/${version}/mods-available/v8js.ini"], [
-				Package["${php_package}-fpm"] ] ],
+			require => [ File["/etc/php/${version}/mods-available/v8js.ini"], [ Package["${php_package}-fpm"] ] ],
 			target  => "/etc/php/${version}/mods-available/v8js.ini",
 			notify  => Service["${php_package}-fpm"],
 		}
