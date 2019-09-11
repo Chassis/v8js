@@ -1,1 +1,4 @@
 version: 2
+# Specify the versions to install.
+libv8: 7.5
+v8js: 2.1.1

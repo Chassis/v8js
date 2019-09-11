@@ -8,14 +8,15 @@ class v8js::extension(
 		$package = installed
 	}
 
-	$v8_version = '6.6'
-	apt::ppa { 'ppa:pinepain/libv8':
+	$lib_v8_version = $config['libv8']
+	$v8js_version   = $config['v8js']
+	apt::ppa { 'ppa:stesie/libv8':
 		require => Class['apt'],
 	}
 
-	package { [ "libv8-${v8_version}", "libv8-${v8_version}-dev" ]:
+	package { [ "libv8-${lib_v8_version}", "libv8-${lib_v8_version}-dev", 're2c' ]:
 		ensure  => $package,
-		require => [ Apt::Ppa['ppa:pinepain/libv8'] ],
+		require => [ Apt::Ppa['ppa:stesie/libv8'] ],
 	}
 
 	$version = $config[php]
@@ -37,16 +38,12 @@ class v8js::extension(
 	}
 
 	if !defined(Package["${php_package}-dev"]) {
-		apt::pin { "${php_package}-dev":
-			packages => [ "${php_package}-dev" ],
-			version  => $package_version,
-			priority => 1001,
-		}
 		package { "${php_package}-dev":
 			ensure  => $package,
 			require => [
-				Apt::Pin["${php_package}-dev"],
+				Apt::Ppa['ppa:ondrej/php'],
 			],
+			notify  => Exec['apt_update'],
 		}
 	}
 
@@ -73,12 +70,12 @@ class v8js::extension(
 
 	if ( installed == $package ) {
 		exec { 'pecl install v8js':
-			command => "/bin/echo '/opt/libv8-${v8_version}
-				' | /usr/bin/pecl install v8js-2.1.0",
-			unless  => '/usr/bin/pecl info v8js',
+			command => "/bin/echo '/opt/libv8-${lib_v8_version}
+				' | /usr/bin/pecl install v8js-${v8js_version}",
+			unless  => "/usr/bin/pecl info v8js | grep ${v8js_version}",
 			require => [
-				Package["libv8-${v8_version}"],
-				Package["libv8-${v8_version}-dev"],
+				Package["libv8-${lib_v8_version}"],
+				Package["libv8-${lib_v8_version}-dev"],
 				Package['php-pear'],
 				Package["${php_package}-dev"],
 				Package["${php_package}-fpm"],
