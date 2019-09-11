@@ -43,7 +43,7 @@ class v8js::extension(
 			require => [
 				Apt::Ppa['ppa:ondrej/php'],
 			],
-			notify => Exec['apt_update'],
+			notify  => Exec['apt_update'],
 		}
 	}
 
