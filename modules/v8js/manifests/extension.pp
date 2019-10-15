@@ -42,7 +42,6 @@ class v8js::extension(
 			ensure  => $package,
 			require => [
 				Apt::Ppa['ppa:ondrej/php'],
-				Class['apt::update'],
 			],
 		}
 	}
@@ -54,7 +53,6 @@ class v8js::extension(
 				Apt::Ppa['ppa:ondrej/php'],
 				Package["${php_package}-fpm"],
 				Package["${php_package}-dev"],
-				Class['apt::update'],
 			],
 			notify  => Service["${php_package}-fpm"],
 		}
