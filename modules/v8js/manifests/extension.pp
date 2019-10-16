@@ -102,6 +102,7 @@ class v8js::extension(
 			ensure  => link,
 			require => [
 				File["/etc/php/${version}/mods-available/v8js.ini"],
+				Package["${php_package}-cli"],
 				Package["${php_package}-fpm"],
 			],
 			target  => "/etc/php/${version}/mods-available/v8js.ini",
