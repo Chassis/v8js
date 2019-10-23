@@ -37,33 +37,40 @@ class v8js::extension(
 		$php_package = "php${version}"
 	}
 
-	if !defined(Package["${php_package}-dev"]) {
-		package { "${php_package}-dev":
-			ensure  => $package,
-			require => [
-				Apt::Ppa['ppa:ondrej/php'],
-			],
-		}
-	}
+	ensure_packages( [ "${php_package}-dev" ], {
+		ensure  => $package,
+		require => [
+			Apt::Ppa['ppa:ondrej/php'],
+			Class['apt::update'],
+		],
+	} )
 
-	if ! defined( Package['php-pear'] ) {
-		package { 'php-pear':
-			ensure  => installed,
-			require => [
-				Apt::Ppa['ppa:ondrej/php'],
-				Package["${php_package}-fpm"],
-				Package["${php_package}-dev"],
-			],
-			notify  => Service["${php_package}-fpm"],
-		}
-	}
+	ensure_packages( [ 'php-pear' ], {
+		ensure  => latest,
+		require => [
+			Package["${php_package}-dev"],
+			Package["${php_package}-xml"],
+		],
+	} )
+
+	ensure_resource( 'exec', 'pecl channel-update pecl.php.net', {
+		path    => '/usr/bin',
+		require => [
+			Package['php-pear'],
+			Package["${php_package}-dev"],
+			Package["${php_package}-xml"],
+		],
+	} )
 
 	if versioncmp( $version, '7.2' ) >= 0 {
 		exec { 'install archive tar':
-		  path    => '/usr/bin',
-		  command => 'pear install Archive_Tar',
-		  require => Package['php-pear'],
-		  unless  => 'pear info Archive_Tar',
+			path    => '/usr/bin',
+			command => 'pear install Archive_Tar',
+			require => [
+				Package['php-pear'],
+				Package["${php_package}-xml"],
+			],
+			unless  => 'pear info Archive_Tar',
 		}
 	}
 
@@ -82,15 +89,6 @@ class v8js::extension(
 			],
 		}
 
-		exec { 'pecl channel-update pecl.php.net':
-			path    => '/usr/bin',
-			require =>  [
-				Package['php-pear'],
-				Package["${php_package}-xml"],
-				Package["${php_package}-dev"],
-			]
-		}
-
 		file { "/etc/php/${version}/mods-available/v8js.ini":
 			ensure  => file,
 			content => 'extension=v8js.so',
@@ -102,7 +100,11 @@ class v8js::extension(
 			"/etc/php/${version}/cli/conf.d/99-v8js.ini"
 		]:
 			ensure  => link,
-			require => [ File["/etc/php/${version}/mods-available/v8js.ini"], [ Package["${php_package}-fpm"] ] ],
+			require => [
+				File["/etc/php/${version}/mods-available/v8js.ini"],
+				Package["${php_package}-cli"],
+				Package["${php_package}-fpm"],
+			],
 			target  => "/etc/php/${version}/mods-available/v8js.ini",
 			notify  => Service["${php_package}-fpm"],
 		}
