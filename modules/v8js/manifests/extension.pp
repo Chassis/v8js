@@ -16,7 +16,10 @@ class v8js::extension(
 
 	package { [ "libv8-${lib_v8_version}", "libv8-${lib_v8_version}-dev", 're2c' ]:
 		ensure  => $package,
-		require => [ Apt::Ppa['ppa:stesie/libv8'] ],
+		require => [
+			Apt::Ppa['ppa:stesie/libv8'],
+			Class['apt::update']
+		],
 	}
 
 	$version = $config[php]
